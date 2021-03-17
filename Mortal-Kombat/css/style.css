@@ -1,0 +1,40 @@
+*{
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+body{
+background: #010202;
+font-family: 'Source Sans Pro', sans-serif;
+ }
+
+ .header{
+     max-width: 1146px;
+     margin:  auto;
+     padding: 56px 0;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+ }
+    
+ .logo{
+     display: block;
+ }
+
+ .user-photo{
+     width: 40px;
+     height: 40px;
+     border-radius: 50%;
+ }
+
+ .user{
+     display: flex;
+     align-items: center;
+ }
+
+ .user-name{
+    font-size: 16px;
+    line-height: 20px;
+    color: #FFFFFF;
+    margin-right: 15px;
+ }
