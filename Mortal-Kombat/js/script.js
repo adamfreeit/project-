@@ -6,4 +6,9 @@ $('#app').vide({
   ogv:'video/video.ogv',
   poster:'img/cover-image.jpg'
 });
-})
+});
+
+
+
+
+
