@@ -11,13 +11,143 @@ const mySwiper = new Swiper('.swiper-container', {
 
 	const buttonCart = document.querySelector('.button-cart'),
 		modalCart = document.querySelector('#modal-cart'),
-		modalClose = document.querySelector('.modal-close');
+		modalClose = document.querySelector('.modal-close'),
+		more = document.querySelector('.more'),
+		navigationLink = document.querySelectorAll('.navigation-link'),
+		longGoodsList = document.querySelector('.long-goods-list'),
+		cartTableGoods = document.querySelector('.cart-table__goods'),
+		cardTableTotal = document.querySelector('.card-table__total');
+
+
+
+		const getGoods = async  () => {
+			const result = await fetch('db/db.json');
+		
+			if (!result.ok){
+				throw'ОШИБОЧКА ВЫШЛА' + result.status;
+			}
+			return await result.json();
+		}
+
+	const cart = {
+		cartGoods: [
+			{
+				id: '099',
+				name: 'Часы',
+				price: 999,
+				count: 2,
+			},
+			{
+				id: '090',
+				name: 'Кейс',
+				price: 99,
+				count: 4,
+			},
+		],
+		renderCart() {
+			cartTableGoods.textContent = "";
+			this.cartGoods.forEach(({ id,name, price, count }) => {
+				const trGood = document.createElement('tr');
+				trGood.className = 'cart-item';
+				trGood.dataset.id = id;
+
+				trGood.innerHTML = `
+					<td>${name}</td>
+					<td>${price}</td>
+					<td><button class="cart-btn-minus" data-id="${id}">-</button></td>
+					<td>${count}</td>
+					<td><button class="cart-btn-plus" data-id="${id}">+</button></td>
+					<td>${price * count}</td>
+					<td><button class="cart-btn-delete" data-id="${id}">x</button></td>
+				`;
+				cartTableGoods.append(trGood);
+			});
+
+			const totalPrice = this.cartGoods.reduce((sum,item) => {
+				return sum + item.price * item.count;
+			}, 0);
+
+			cardTableTotal.textContent = totalPrice + '$'
+
+		},
+		deleteGood(id){
+			this.cartGoods = this.cartGoods.filter(item => id !== item.id);
+			this.renderCart();
+		},
+		minusGood(id){
+			for(const item of this.cartGoods){
+				if(item.id === id) {
+					if(item.count <= 1) {
+this.deleteGood(id)
+					}else {
+						item.count--;
+
+					}
+					break;
+				}
+			}
+			this.renderCart();
+		},
+		plusGood(id){
+			for(const item of this.cartGoods){
+				if(item.id === id) {
+					item.count++;
+					break;
+				}
+			}
+			this.renderCart();
+		},
+		addCartGood(id){
+			const goodItem = this.cartGoods.find(item => item.id === id);
+			if (goodItem) {
+				this.plusGood(id);
+			}else {
+				getGoods()
+				.then(data => data.find(item => item.id === id))
+				.then(({id, name, price}) => {
+					this.cartGoods.push({
+						id,
+						name,
+						price,
+						count: 1
+					})
+				})
+			}
+		},
+
+	}
+
+	document.body.addEventListener('click', event => {
+		const addToCart = event.target.closest('.add-to-cart');
+
+		if (addToCart) {
+cart.addCartGood(addToCart.dataset.id)
+		}
+	})
+
+	cartTableGoods.addEventListener('click', event => {
+		const target = event.target;
+		if (target.classList.contains('cart-btn-delete')) {
+			const id = target.closest('.cart-item').dataset.id
+			cart.deleteGood(id)
+		};
+
+		if (target.classList.contains('cart-btn-minus')){
+			const id = target.closest('.cart-item').dataset.id
+			cart.minusGood(id)
+		}
+		if (target.classList.contains('cart-btn-plus')){
+			const id = target.closest('.cart-item').dataset.id
+			cart.plusGood(id)
+		}
+	});
 
 	
-	const openModal = function() {
-		modalCart.classList.add('show')
+	const openModal = () => {
+		cart.renderCart();
+		modalCart.classList.add('show');
 	}
-	const closeModal = function() {
+	const closeModal = () => {
 		modalCart.classList.remove('show');
 
 	}
@@ -37,7 +167,7 @@ const mySwiper = new Swiper('.swiper-container', {
 	const scrollLinks = document.querySelectorAll('a.scroll-link');
 
 	for (const scrollLink of scrollLinks) {
-		scrollLink.addEventListener('click', function(event) {
+		scrollLink.addEventListener('click', event => {
 			event.preventDefault();
 			const id = scrollLink.getAttribute('href');
 			document.querySelector(id).scrollIntoView({
@@ -51,18 +181,8 @@ const mySwiper = new Swiper('.swiper-container', {
 
 // goods
 
-const more = document.querySelector('.more'),
-	 navigationLink = document.querySelectorAll('.navigation-link'),
-	 longGoodsList = document.querySelector('.long-goods-list');
 
-const getGoods = async function () {
-	const result = await fetch('db/db.json');
 
-	if (!result.ok){
-		throw'ОШИБОЧКА ВЫШЛА' + result.status;
-	}
-	return result.json();
-}
 
 const createCard = function ({ label, name, img, description, id, price } ) {
 	const card = document.createElement('div');
@@ -96,27 +216,24 @@ const renderCards = function (data) {
 	document.body.classList.add('show-goods')
 };
 
-more.addEventListener('click', function (event) {
+more.addEventListener('click',  event => {
 	event.preventDefault();
 	getGoods().then(renderCards);
 });
 
 const filterCards = function(field, value) {
 	getGoods()
-	.then(function (data){
-		const filteredGoods = data.filter(function(good) {
-		 return	good[field] === value
-		});
-		return filteredGoods;
-	})
+	.then( data => data.filter(good => good[field] === value))
 	.then(renderCards);
 }
 
 navigationLink.forEach(function (link) {
-	link.addEventListener('click', function(event) {
+	link.addEventListener('click', event => {
 		event.preventDefault();
 		const field = link.dataset.field;
 		const value = link.textContent;
 		filterCards(field, value)
 	})
 })
+
+
