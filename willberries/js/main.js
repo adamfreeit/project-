@@ -234,6 +234,41 @@ navigationLink.forEach(function (link) {
 		const value = link.textContent;
 		filterCards(field, value)
 	})
-})
+});
+
+const modalForm = document.querySelector('.modal-form');
+
+const postData = dataUser => fetch('server.php', {
+	method: 'POST',
+	body: dataUser,
+});
+
+modalForm.addEventListener('submit', event => {
+	event.preventDefault();
+
+	JSON.stringify(cart.cartGoods)
+	JSON.stringify(cart.cartGoods)
+
+	const formData = new FormData(modalForm);
+	formData.append('cart', JSON.stringify(cart.cartGoods))
+
+	postData(formData)
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(response.status);
+			}
+			alert('Ваш заказ успешно отправин')
+		})
+		.catch(error => {
+			alert('К сожалению произошла ошибку');
+			console.error(err);
+		})
+		.finally( () => {
+			closeModal();
+			modalForm.reset();
+			cart.cartGoods.length = 0;
+		});
+});
+
 
 
